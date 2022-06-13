@@ -14,6 +14,7 @@ class CastSocketMessage {
 
 class CastSocket {
   Stream<CastSocketMessage> get stream => _controller.stream;
+  bool isClosed = false;
 
   final SecureSocket _socket;
   int _requestId = 0;
@@ -21,13 +22,15 @@ class CastSocket {
 
   CastSocket._(this._socket);
 
-  static Future<CastSocket> connect(String host, int port, [Duration? timeout]) async {
+  static Future<CastSocket> connect(String host, int port,
+      [Duration? timeout]) async {
     timeout ??= Duration(seconds: 10);
 
     final _socket = await SecureSocket.connect(
       host,
       port,
-      onBadCertificate: (X509Certificate certificate) => true, // chromecast use self-signed certificate
+      onBadCertificate: (X509Certificate certificate) =>
+          true, // chromecast use self-signed certificate
       timeout: timeout,
     );
 
@@ -57,10 +60,12 @@ class CastSocket {
   }
 
   Future<dynamic> close() {
+    isClosed = true;
     return _socket.close();
   }
 
-  void sendMessage(String namespace, String sourceId, String destinationId, Map<String, dynamic> payload) {
+  void sendMessage(String namespace, String sourceId, String destinationId,
+      Map<String, dynamic> payload) {
     if (payload['requestId'] == null) {
       payload['requestId'] = _requestId;
       _requestId += 1;
@@ -75,8 +80,10 @@ class CastSocket {
     castMessage.payloadUtf8 = jsonEncode(payload);
 
     Uint8List bytes = castMessage.writeToBuffer();
-    Uint32List headers = Uint32List.fromList(_writeUInt32BE(List<int>.filled(4, 0), bytes.lengthInBytes));
-    Uint32List data = Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
+    Uint32List headers = Uint32List.fromList(
+        _writeUInt32BE(List<int>.filled(4, 0), bytes.lengthInBytes));
+    Uint32List data =
+        Uint32List.fromList(headers.toList()..addAll(bytes.toList()));
 
     _socket.add(data);
   }

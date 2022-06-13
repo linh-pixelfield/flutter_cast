@@ -1,5 +1,10 @@
 import 'dart:async';
 
+import 'package:cast/cast.dart';
+import 'package:cast/cast_events/cast_media_status_message_event/cast_media_status_message_event.dart';
+import 'package:cast/cast_events/cast_message_event.dart';
+import 'package:cast/commands/receiver_commands/receiver_command.dart';
+
 import 'device.dart';
 import 'socket.dart';
 
@@ -10,10 +15,12 @@ enum CastSessionState {
 }
 
 class CastSession {
-  static const kNamespaceConnection = 'urn:x-cast:com.google.cast.tp.connection';
+  static const kNamespaceConnection =
+      'urn:x-cast:com.google.cast.tp.connection';
   static const kNamespaceHeartbeat = 'urn:x-cast:com.google.cast.tp.heartbeat';
   static const kNamespaceReceiver = 'urn:x-cast:com.google.cast.receiver';
-  static const kNamespaceDeviceauth = 'urn:x-cast:com.google.cast.tp.deviceauth';
+  static const kNamespaceDeviceauth =
+      'urn:x-cast:com.google.cast.tp.deviceauth';
   static const kNamespaceMedia = 'urn:x-cast:com.google.cast.media';
 
   final String sessionId;
@@ -22,6 +29,7 @@ class CastSession {
 
   Stream<CastSessionState> get stateStream => _stateController.stream;
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
+  Stream<List<CastMediaStatusEvent>> get eventStream => _eventController.stream;
 
   final CastSocket _socket;
   CastSessionState _state = CastSessionState.connecting;
@@ -29,10 +37,13 @@ class CastSession {
 
   final _stateController = StreamController<CastSessionState>.broadcast();
   final _messageController = StreamController<Map<String, dynamic>>.broadcast();
+  final _eventController =
+      StreamController<List<CastMediaStatusEvent>>.broadcast();
 
   CastSession._(this.sessionId, this._socket);
 
-  static Future<CastSession> connect(String sessionId, CastDevice device, [Duration? timeout]) async {
+  static Future<CastSession> connect(String sessionId, CastDevice device,
+      [Duration? timeout]) async {
     final _socket = await CastSocket.connect(
       device.host,
       device.port,
@@ -51,6 +62,7 @@ class CastSession {
   }
 
   Future<dynamic> close() async {
+    if (_socket.isClosed) return;
     if (!_messageController.isClosed) {
       sendMessage(kNamespaceConnection, {
         'type': 'CLOSE',
@@ -59,7 +71,6 @@ class CastSession {
         await _socket.flush();
       } catch (_error) {}
     }
-
     return _socket.close();
   }
 
@@ -70,15 +81,24 @@ class CastSession {
         return;
       }
 
-      if (message.namespace == kNamespaceHeartbeat && message.payload['type'] == 'PING') {
+      if (message.namespace == kNamespaceHeartbeat &&
+          message.payload['type'] == 'PING') {
         sendMessage(kNamespaceHeartbeat, {
           'type': 'PONG',
         });
-      } else if (message.namespace == kNamespaceConnection && message.payload['type'] == 'CLOSE') {
+      } else if (message.namespace == kNamespaceConnection &&
+          message.payload['type'] == 'CLOSE') {
         close();
-      } else if (message.namespace == kNamespaceReceiver && message.payload['type'] == 'RECEIVER_STATUS') {
+      } else if (message.namespace == kNamespaceReceiver &&
+          message.payload['type'] == 'RECEIVER_STATUS') {
         _handleReceiverStatus(message.payload);
         _messageController.add(message.payload);
+      } else if (message.payload['type'] ==
+          CastMessageEventType.mediaStatus.rawValue) {
+        final mediaEvents = List.from(message.payload['status'])
+            .map((e) => CastMediaStatusEvent.fromMap(e))
+            .toList();
+        _eventController.add(mediaEvents);
       } else {
         _messageController.add(message.payload);
       }
@@ -90,6 +110,7 @@ class CastSession {
       _state = CastSessionState.closed;
       _stateController.add(_state);
       _stateController.close();
+      _eventController.close();
     }, cancelOnError: false);
   }
 
@@ -117,6 +138,20 @@ class CastSession {
       sessionId,
       _transportId ?? 'receiver-0',
       payload,
+    );
+  }
+
+  void sendMediaCommand(CastMediaCommand command) {
+    sendMessage(
+      kNamespaceMedia,
+      command.toMap(),
+    );
+  }
+
+  void sendReceiverCommand(CastReceiverCommand command) {
+    sendMessage(
+      kNamespaceReceiver,
+      command.toMap(),
     );
   }
 
