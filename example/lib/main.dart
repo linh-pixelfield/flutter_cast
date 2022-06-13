@@ -238,7 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
             CastSetVolumeCommand(volume: CastMediaVolume(0.5, false)));
       },
     );
-    session.eventStream.listen((event) {
+    session.mediaStatusStream.listen((event) {
       print('receive event: $event');
     });
   }

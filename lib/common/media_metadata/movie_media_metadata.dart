@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:cast/cast_events/models/image.dart';
-import 'package:cast/cast_events/models/media_metadata/cast_media_metadata.dart';
+import 'package:cast/common/image.dart';
+import 'package:cast/common/media_metadata/cast_media_metadata.dart';
 
 ///Describes a movie media artifact.
 class CastMovieMediaMetadata extends CastMediaMetadata {

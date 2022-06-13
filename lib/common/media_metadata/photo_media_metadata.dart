@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:cast/cast_events/models/media_metadata/cast_media_metadata.dart';
+import 'package:cast/common/media_metadata/cast_media_metadata.dart';
 
 class CastPhotoMediaMetadata extends CastMediaMetadata {
   CastPhotoMediaMetadata({

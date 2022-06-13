@@ -1,6 +1,9 @@
 import 'dart:convert';
 
-import '../enums/stream_type.dart';
+import 'package:cast/cast_status/utils/utils.dart';
+import 'package:cast/common/media_metadata/cast_media_metadata.dart';
+
+import '../cast_status/media_status/enums/stream_type.dart';
 
 class CastMediaMedialInformation {
   ///Service-specific identifier of the content currently loaded

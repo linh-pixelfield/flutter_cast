@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:cast/common/image.dart';
+import 'package:cast/common/media_metadata/cast_media_metadata.dart';
+
 ///Describes a television show episode media artifact.
 class CastTvShowMediaMetadata extends CastMediaMetadata {
   CastTvShowMediaMetadata({

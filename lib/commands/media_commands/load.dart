@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cast/cast.dart';
+import 'package:cast/common/media_information.dart';
 
 import 'enum/command_type.dart';
 

@@ -1,4 +1,7 @@
-import 'package:cast/cast.dart';
+import 'package:cast/common/media_metadata/cast_media_metadata.dart';
+import 'package:cast/common/media_metadata/generic_media_metadata.dart';
+import 'package:cast/common/media_metadata/movie_media_metadata.dart';
+import 'package:cast/common/media_metadata/tv_show_media_metadata.dart';
 
 CastMediaMetadata getCastMediaMetadata(Map<String, dynamic> json) {
   switch (json['metadataType'] as int) {

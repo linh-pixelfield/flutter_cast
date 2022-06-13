@@ -1,3 +1,4 @@
+import 'package:cast/cast.dart';
 import 'package:duration/duration.dart';
 import 'package:example/views/player/player_controller.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,15 @@ class VideoCastPlayer extends StatelessWidget {
               color: Colors.black,
             ),
           ),
+          Positioned.fill(child: Builder(builder: (context) {
+            final metadata = controller.currentMediaStatus?.media?.metadata;
+            if (metadata is CastMovieMediaMetadata) {
+              if (metadata.images?.isEmpty ?? true)
+                return const SizedBox.shrink();
+              return Image.network(metadata.images!.first.url.toString());
+            }
+            return const SizedBox.shrink();
+          })),
           Positioned(
             bottom: 0,
             left: 0,
@@ -53,17 +63,21 @@ class VideoCastPlayer extends StatelessWidget {
                 children: [
                   Expanded(
                     child: RotatedBox(
-                      quarterTurns: 1,
+                      quarterTurns: 3,
                       child: Slider(
-                        onChanged: (double value) {},
-                        value: 0,
+                        onChanged: controller.onVolumeChange,
+                        value: controller.volumeLevel,
+                        onChangeEnd: controller.onVolumeChangeEnd,
+                        onChangeStart: controller.onVolumeChangeStart,
                       ),
                     ),
                   ),
                   IconButton(
                       onPressed: controller.toggleMute,
                       icon: Icon(
-                        Icons.volume_up,
+                        controller.deviceVolume?.muted ?? false
+                            ? Icons.volume_off
+                            : Icons.volume_up,
                         color: Colors.white,
                       ))
                 ],

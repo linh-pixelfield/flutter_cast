@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:cast/cast.dart';
-import 'package:cast/cast_events/cast_media_status_message_event/cast_media_status_message_event.dart';
-import 'package:cast/cast_events/cast_message_event.dart';
-import 'package:cast/commands/receiver_commands/receiver_command.dart';
+import 'package:cast/common/cast_status_event.dart';
+import 'package:cast/cast_status/media_status/cast_media_status.dart';
 
 import 'device.dart';
 import 'socket.dart';
@@ -29,7 +28,10 @@ class CastSession {
 
   Stream<CastSessionState> get stateStream => _stateController.stream;
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
-  Stream<List<CastMediaStatusEvent>> get eventStream => _eventController.stream;
+  Stream<List<CastMediaStatus>> get mediaStatusStream =>
+      _mediaStatusController.stream;
+  Stream<CastReceiverStatus> get receiverStatusStream =>
+      _receiverStatusController.stream;
 
   final CastSocket _socket;
   CastSessionState _state = CastSessionState.connecting;
@@ -37,8 +39,10 @@ class CastSession {
 
   final _stateController = StreamController<CastSessionState>.broadcast();
   final _messageController = StreamController<Map<String, dynamic>>.broadcast();
-  final _eventController =
-      StreamController<List<CastMediaStatusEvent>>.broadcast();
+  final _mediaStatusController =
+      StreamController<List<CastMediaStatus>>.broadcast();
+  final _receiverStatusController =
+      StreamController<CastReceiverStatus>.broadcast();
 
   CastSession._(this.sessionId, this._socket);
 
@@ -91,14 +95,17 @@ class CastSession {
         close();
       } else if (message.namespace == kNamespaceReceiver &&
           message.payload['type'] == 'RECEIVER_STATUS') {
+        _receiverStatusController
+            .add(CastReceiverStatus.fromMap(message.payload));
         _handleReceiverStatus(message.payload);
+
         _messageController.add(message.payload);
       } else if (message.payload['type'] ==
-          CastMessageEventType.mediaStatus.rawValue) {
+          CastStatusType.mediaStatus.rawValue) {
         final mediaEvents = List.from(message.payload['status'])
-            .map((e) => CastMediaStatusEvent.fromMap(e))
+            .map((e) => CastMediaStatus.fromMap(e))
             .toList();
-        _eventController.add(mediaEvents);
+        _mediaStatusController.add(mediaEvents);
       } else {
         _messageController.add(message.payload);
       }
@@ -110,7 +117,7 @@ class CastSession {
       _state = CastSessionState.closed;
       _stateController.add(_state);
       _stateController.close();
-      _eventController.close();
+      _mediaStatusController.close();
     }, cancelOnError: false);
   }
 

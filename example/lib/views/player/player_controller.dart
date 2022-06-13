@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:cast/cast.dart';
-import 'package:cast/cast_events/cast_media_status_message_event/cast_media_status_message_event.dart';
 import 'package:example/models/video_model.dart';
 import 'package:example/views/devices_bottom_sheet/devices_bottom_sheet_view.dart';
 import 'package:example/views/gallery/gallery_view.dart';
@@ -11,15 +9,21 @@ import 'package:mime/mime.dart';
 
 class PlayerController extends GetxController {
   CastSession? _currentSession;
-  StreamSubscription<List<CastMediaStatusEvent>>? _mediaEventSubscription;
+  StreamSubscription<List<CastMediaStatus>>? _mediaStatusSubscription;
   StreamSubscription<CastSessionState>? _sessionStateSubscription;
+  StreamSubscription<CastReceiverStatus>? _receiverStatusSubscription;
+  CastMediaVolume? deviceVolume;
   bool get activeSession => _currentSession != null;
   Timer? _videoTickerTimer;
   bool isChangeProgress = false;
   double _progress = 0.0;
+  double beforeMuteVolume = 0.0;
   Duration? currentVideoDuration;
-  CastMediaStatusEvent? currentMediaStatus;
+  CastMediaStatus? currentMediaStatus;
+  bool _isVolumeChanging = false;
+  double _volumeLevel = 0;
 
+  double get volumeLevel => _volumeLevel;
   double get videoProgress => _progress;
 
   void openCastDevices() async {
@@ -31,11 +35,14 @@ class PlayerController extends GetxController {
 
   void _setUpCastDevice(CastSession session) {
     _currentSession = session;
-    _mediaEventSubscription =
-        _currentSession?.eventStream.listen(_listenEvents);
+    _mediaStatusSubscription =
+        _currentSession?.mediaStatusStream.listen(_listenEvents);
 
     _sessionStateSubscription =
         _currentSession?.stateStream.listen(_listenSessionsState);
+
+    _receiverStatusSubscription =
+        _currentSession?.receiverStatusStream.listen(_listenReceiverStatus);
     _videoTickerTimer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
@@ -78,13 +85,13 @@ class PlayerController extends GetxController {
     }
   }
 
-  void _listenEvents(List<CastMediaStatusEvent> events) {
+  void _listenEvents(List<CastMediaStatus> events) {
     if (events.isEmpty) return;
     _onChangeProgress(events);
     update();
   }
 
-  _onChangeProgress(List<CastMediaStatusEvent> events) {
+  _onChangeProgress(List<CastMediaStatus> events) {
     currentMediaStatus = events.first;
     if (!isChangeProgress) {
       int mediaDuration = (events.first.media?.duration?.inMilliseconds ?? 0);
@@ -97,10 +104,13 @@ class PlayerController extends GetxController {
   void _listenSessionsState(CastSessionState event) {
     switch (event) {
       case CastSessionState.closed:
-        _mediaEventSubscription?.cancel();
+        _videoTickerTimer?.cancel();
+        _mediaStatusSubscription?.cancel();
         _sessionStateSubscription?.cancel();
+        _receiverStatusSubscription?.cancel();
         _currentSession = null;
         _progress = 0;
+
         update();
 
         break;
@@ -123,7 +133,7 @@ class PlayerController extends GetxController {
 
     _currentSession?.sendMediaCommand(
       CastSeekCommand(
-        mediaSessionId: 1,
+        mediaSessionId: currentMediaStatus?.mediaSessionId ?? 1,
         currentTime: Duration(milliseconds: duration),
       ),
     );
@@ -131,10 +141,41 @@ class PlayerController extends GetxController {
   }
 
   void toggleMute() {
-    final currentVolume = currentMediaStatus?.volume;
-    if (currentVolume == null) return;
-    _currentSession?.sendReceiverCommand(CastSetVolumeCommand(
-        volume: CastMediaVolume(
-            currentVolume.level, !(currentVolume.muted ?? false))));
+    if (deviceVolume == null) return;
+    final isMuted = deviceVolume!.muted ?? false;
+    double volumeLevel = deviceVolume!.level?.toDouble() ?? 0.0;
+    if (isMuted) {
+      volumeLevel = beforeMuteVolume;
+    } else {
+      beforeMuteVolume = volumeLevel;
+    }
+    _currentSession?.sendReceiverCommand(
+        CastSetVolumeCommand(volume: CastMediaVolume(volumeLevel, !isMuted)));
+  }
+
+  void _listenReceiverStatus(CastReceiverStatus receiverStatus) {
+    deviceVolume = receiverStatus.status.volume;
+    if (!_isVolumeChanging) {
+      _volumeLevel = deviceVolume?.level?.toDouble() ?? 0.0;
+    }
+    update();
+  }
+
+  void onVolumeChangeEnd(double value) async {
+    _isVolumeChanging = false;
+    _currentSession?.sendReceiverCommand(
+      CastSetVolumeCommand(
+        volume: CastMediaVolume(value, value == 0),
+      ),
+    );
+  }
+
+  void onVolumeChangeStart(double value) {
+    _isVolumeChanging = true;
+  }
+
+  void onVolumeChange(double value) {
+    _volumeLevel = value;
+    update();
   }
 }

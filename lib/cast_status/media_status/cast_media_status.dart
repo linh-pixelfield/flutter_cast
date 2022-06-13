@@ -1,5 +1,9 @@
 import 'dart:convert';
-import 'models/medial_information.dart';
+import 'package:cast/cast_status/media_status/enums/player_state.dart';
+import 'package:cast/cast_status/media_status/models/idle_reason.dart';
+import 'package:cast/common/volume.dart';
+
+import '../../common/medial_information.dart';
 import 'supported_media_commands.dart';
 
 class CastMediaStatus {

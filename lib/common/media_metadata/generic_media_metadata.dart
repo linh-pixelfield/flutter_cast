@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:cast/cast_events/models/image.dart';
+import 'package:cast/common/image.dart';
 
 import 'cast_media_metadata.dart';
 

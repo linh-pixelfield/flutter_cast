@@ -1,10 +1,7 @@
 import 'dart:convert';
 
 import 'package:cast/cast.dart';
-import 'package:cast/cast_events/cast_media_status_message_event/volume.dart';
-import 'package:cast/commands/receiver_commands/enums/receiver_command_type.dart';
-import 'package:cast/commands/receiver_commands/receiver_command.dart';
-export 'package:cast/cast_events/cast_media_status_message_event/volume.dart';
+import 'package:cast/common/volume.dart';
 
 ///Sets the media stream volume. Used for
 ///fade-in/fade-out effects on the media stream.

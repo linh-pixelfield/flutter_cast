@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:cast/cast_events/models/media_metadata/cast_media_metadata.dart';
-import 'package:cast/cast_events/models/stream_type.dart';
+import 'package:cast/common/media_metadata/cast_media_metadata.dart';
+import 'package:cast/common/stream_type.dart';
 
 /// This data structure describes a media stream.
 class CastMediaInformation {
