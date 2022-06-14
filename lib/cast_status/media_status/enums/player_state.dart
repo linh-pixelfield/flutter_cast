@@ -16,7 +16,7 @@ enum CastMediaPlayerState {
   final String rawValue;
   const CastMediaPlayerState(this.rawValue);
 
-  factory CastMediaPlayerState.fromString(String value) {
+  factory CastMediaPlayerState.fromMap(String value) {
     return CastMediaPlayerState.values.firstWhere(
       (element) => element.rawValue == value,
       orElse: () => CastMediaPlayerState.unknown,

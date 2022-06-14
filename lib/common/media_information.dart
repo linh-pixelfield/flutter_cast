@@ -1,44 +1,43 @@
 import 'dart:convert';
 
+import 'package:cast/cast_status/utils/utils.dart';
 import 'package:cast/common/media_metadata/cast_media_metadata.dart';
-import 'package:cast/common/stream_type.dart';
 
-/// This data structure describes a media stream.
+import '../cast_status/media_status/enums/stream_type.dart';
+
 class CastMediaInformation {
-  ///Service-specific identifier of the content currently
-  ///loaded by the media player. This is a free form
-  /// string and is specific to the application.
-  ///  In most cases, this will be the URL to the
-  ///  media, but the sender can choose to pass
-  /// a string that the receiver can interpret
-  ///  properly. Max length: 1k
+  ///Service-specific identifier of the content currently loaded
+  /// by the media player. This is a free form string and is specific
+  ///  to the application. In most cases, this will be the URL to the
+  ///  media, but the sender can choose to pass a string that the receiver can
+  ///  interpret properly. Max length: 1k
   final String contentId;
 
-  ///Describes the type of media artifact
-  final CastStreamType streamType;
+  ///Describes the type of media artifact as one of the following:
+
+  ///NONE
+  ///BUFFERED
+  ///LIVE
+  final CastMediaStreamType streamType;
 
   ///MIME content type of the media being played
-  ///
-  ///Image formats: APNG, BMP, GIF, JPEG, PNG, WEBP;
-  ///
-  ///Media container: formats  MP2T MP3 MP4 OGG WAV WebM;
-  ///
-  ///Video codecs see: https://developers.google.com/cast/docs/media#video_codecs;
-  ///
-  ///Audio codecs see: https://developers.google.com/cast/docs/media#audio_codecs;
-
   final String contentType;
 
-  ///optional The media metadata object, one of the following:
+  ///The media metadata object, one of the following:
+
+  ///0  GenericMediaMetadata
+  ///1  MovieMediaMetadata
+  ///2  TvShowMediaMetadata
+  ///3  MusicTrackMediaMetadata
+  ///4  PhotoMediaMetadata
   final CastMediaMetadata? metadata;
 
-  /// Duration of the currently playing stream in seconds
-  Duration? duration;
+  ///optional Duration of the currently playing stream in seconds
+  final Duration? duration;
 
-  ///optional Application-specific blob
-  /// of data defined by either the sender
-  ///  application or the receiver application
+  ///optional Application-specific blob of data defined by either the sender application or the receiver application
   final Map<String, dynamic>? customData;
+
   CastMediaInformation({
     required this.contentId,
     required this.streamType,
@@ -59,5 +58,23 @@ class CastMediaInformation {
     };
   }
 
+  factory CastMediaInformation.fromMap(Map<String, dynamic> map) {
+    return CastMediaInformation(
+      contentId: map['contentId'] ?? '',
+      streamType: CastMediaStreamType.fromString(map['streamType']),
+      contentType: map['contentType'] ?? '',
+      metadata: map['metadata'] != null
+          ? getCastMediaMetadata(map['metadata'])
+          : null,
+      duration: Duration(seconds: map['duration']?.toInt() ?? 0),
+      customData: map['customData'] != null
+          ? Map<String, dynamic>.from(map['customData'])
+          : null,
+    );
+  }
+
   String toJson() => json.encode(toMap());
+
+  factory CastMediaInformation.fromJson(String source) =>
+      CastMediaInformation.fromMap(json.decode(source));
 }

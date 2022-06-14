@@ -20,7 +20,7 @@ enum SupportedMediaCommand {
   const SupportedMediaCommand(this.value);
 
   ///Combinations are described as summations; for example, Pause+Seek+StreamVolume+Mute == 15.
-  static SupportedMediaCommands fromInt(int value) {
+  static SupportedMediaCommands fromMap(int value) {
     final SupportedMediaCommands commands = [];
     for (final command in SupportedMediaCommand.values) {
       final sum = commands.map((e) => e.value).sum;

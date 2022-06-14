@@ -5,5 +5,6 @@ enum MediaCommandType {
   PLAY,
   VOLUME,
   GET_STATUS,
-  SEEK;
+  SEEK,
+  QUEUE_INSERT,
 }

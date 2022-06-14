@@ -20,7 +20,7 @@ enum CastMediaIdleReason {
 
   final String value;
   const CastMediaIdleReason(this.value);
-  factory CastMediaIdleReason.fromString(String value) =>
+  factory CastMediaIdleReason.fromMap(String value) =>
       CastMediaIdleReason.values.firstWhere(
         (element) => element.value == value,
         orElse: () => CastMediaIdleReason.error,

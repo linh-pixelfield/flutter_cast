@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
+
 typedef VideoModels = List<VideoModel>;
 
-class VideoModel {
+class VideoModel extends Equatable {
   final String id;
   final String title;
   final String thumbnailUrl;
@@ -64,4 +66,8 @@ class VideoModel {
 
   factory VideoModel.fromJson(String source) =>
       VideoModel.fromMap(json.decode(source));
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id];
 }

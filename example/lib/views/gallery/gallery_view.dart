@@ -14,6 +14,11 @@ class GalleryView extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: const Text('Gallery'),
+              actions: [
+                IconButton(
+                    onPressed: controller.resultItems,
+                    icon: const Icon(Icons.check_box))
+              ],
             ),
             body: FutureBuilder<VideoModels>(
               future: controller.getVideos(),
@@ -25,7 +30,7 @@ class GalleryView extends StatelessWidget {
                     ),
                   );
                 } else if (!snapshot.hasData) {
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
@@ -35,11 +40,12 @@ class GalleryView extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final video = videos[index];
                     return ListTile(
+                      selected: controller.selectedVideos.contains(video),
                       leading: Image.network(video.thumbnailUrl),
                       title: Text(video.title),
                       subtitle: Text(video.author),
                       onTap: () {
-                        controller.openVideo(video);
+                        controller.selectVideo(video);
                       },
                     );
                   },

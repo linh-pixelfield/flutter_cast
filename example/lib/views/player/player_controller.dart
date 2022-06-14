@@ -22,7 +22,7 @@ class PlayerController extends GetxController {
   CastMediaStatus? currentMediaStatus;
   bool _isVolumeChanging = false;
   double _volumeLevel = 0;
-
+  bool get existentMediaSession => currentMediaStatus != null;
   double get volumeLevel => _volumeLevel;
   double get videoProgress => _progress;
 
@@ -43,6 +43,7 @@ class PlayerController extends GetxController {
 
     _receiverStatusSubscription =
         _currentSession?.receiverStatusStream.listen(_listenReceiverStatus);
+    _currentSession?.messageStream.listen(_printRawMessages);
     _videoTickerTimer = Timer.periodic(
       const Duration(seconds: 1),
       (timer) {
@@ -59,40 +60,50 @@ class PlayerController extends GetxController {
   }
 
   void openGallery() async {
-    final video = await Get.to<VideoModel?>(() => const GalleryView());
-    if (video != null) {
-      final mimeType = lookupMimeType(video.videoUrl);
+    final videos = await Get.to<List<VideoModel>?>(() => const GalleryView());
+    if (videos == null || videos.isEmpty) return;
+    final queueItems = videos
+        .map(
+          (e) => CastQueueItem(
+            media: CastMediaInformation(
+                contentId: e.videoUrl,
+                streamType: CastMediaStreamType.BUFFERED,
+                contentType: lookupMimeType(e.videoUrl) ?? ''),
+            preloadTime: const Duration(seconds: 15),
+          ),
+        )
+        .toList();
+    if (!existentMediaSession) {
       _currentSession?.sendMediaCommand(
         CastLoadCommand(
           autoplay: true,
-          media: CastMediaInformation(
-            contentId: video.videoUrl,
-            streamType: CastStreamType.buffered,
-            contentType: mimeType ?? '',
-            metadata: CastMovieMediaMetadata(
-              images: [
-                CastImage(
-                  url: Uri.parse(video.thumbnailUrl),
-                ),
-              ],
-              studio: video.author,
-              title: video.title,
-              subtitle: video.description,
-            ),
+          queueData: CastQueueData(
+            items: queueItems,
           ),
+        ),
+      );
+    } else {
+      _currentSession?.sendMediaCommand(
+        CastQueueInsertCommand(
+          items: queueItems,
+          mediaSessionId: currentMediaStatus?.mediaSessionId ?? 1,
         ),
       );
     }
   }
 
   void _listenEvents(List<CastMediaStatus> events) {
-    if (events.isEmpty) return;
+    if (events.isEmpty) {
+      currentMediaStatus = null;
+      return;
+    }
     _onChangeProgress(events);
     update();
   }
 
   _onChangeProgress(List<CastMediaStatus> events) {
     currentMediaStatus = events.first;
+    print('currentMediaStatus: ${currentMediaStatus?.toJson()}');
     if (!isChangeProgress) {
       int mediaDuration = (events.first.media?.duration?.inMilliseconds ?? 0);
       if (mediaDuration == 0) return;
@@ -109,6 +120,7 @@ class PlayerController extends GetxController {
         _sessionStateSubscription?.cancel();
         _receiverStatusSubscription?.cancel();
         _currentSession = null;
+
         _progress = 0;
 
         update();
@@ -177,5 +189,22 @@ class PlayerController extends GetxController {
   void onVolumeChange(double value) {
     _volumeLevel = value;
     update();
+  }
+
+  void togglePlayPause() {
+    if (currentMediaStatus == null) return;
+    final isPlaying =
+        currentMediaStatus!.playerState == CastMediaPlayerState.playing;
+    if (isPlaying) {
+      _currentSession?.sendMediaCommand(
+          CastPauseCommand(mediaSessionId: currentMediaStatus!.mediaSessionId));
+    } else {
+      _currentSession?.sendMediaCommand(
+          CastPlayCommand(mediaSessionId: currentMediaStatus!.mediaSessionId));
+    }
+  }
+
+  void _printRawMessages(Map<String, dynamic> event) {
+    print(event);
   }
 }

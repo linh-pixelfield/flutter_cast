@@ -25,12 +25,29 @@ class VideoCastPlayer extends StatelessWidget {
           Positioned.fill(child: Builder(builder: (context) {
             final metadata = controller.currentMediaStatus?.media?.metadata;
             if (metadata is CastMovieMediaMetadata) {
-              if (metadata.images?.isEmpty ?? true)
+              if (metadata.images?.isEmpty ?? true) {
                 return const SizedBox.shrink();
+              }
               return Image.network(metadata.images!.first.url.toString());
             }
             return const SizedBox.shrink();
           })),
+          Positioned.fill(
+              child: IconButton(
+            onPressed: controller.togglePlayPause,
+            icon: CircleAvatar(
+              backgroundColor: Colors.white.withOpacity(0.4),
+              radius: 32,
+              child: Icon(
+                controller.currentMediaStatus?.playerState ==
+                        CastMediaPlayerState.playing
+                    ? Icons.pause
+                    : Icons.play_arrow,
+                size: 52,
+                color: Colors.black,
+              ),
+            ),
+          )),
           Positioned(
             bottom: 0,
             left: 0,
