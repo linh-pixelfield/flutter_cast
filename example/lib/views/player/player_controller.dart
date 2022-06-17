@@ -44,12 +44,12 @@ class PlayerController extends GetxController {
     _receiverStatusSubscription =
         _currentSession?.receiverStatusStream.listen(_listenReceiverStatus);
     _currentSession?.messageStream.listen(_printRawMessages);
-    _videoTickerTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        _currentSession?.sendMediaCommand(CastGetStatusCommand());
-      },
-    );
+    // _videoTickerTimer = Timer.periodic(
+    //   const Duration(seconds: 1),
+    //   (timer) {
+    //     _currentSession?.sendMediaCommand(CastGetStatusCommand());
+    //   },
+    // );
     update();
   }
 
@@ -84,7 +84,7 @@ class PlayerController extends GetxController {
       );
     } else {
       _currentSession?.sendMediaCommand(
-        CastQueueInsertCommand(
+        CastQueueInsertItemsCommand(
           items: queueItems,
           mediaSessionId: currentMediaStatus?.mediaSessionId ?? 1,
         ),

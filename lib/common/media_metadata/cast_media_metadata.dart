@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class CastMediaMetadata {
   final MediaMetadataType metadataType;
   CastMediaMetadata({
@@ -6,9 +8,20 @@ class CastMediaMetadata {
 
   Map<String, dynamic> toMap() {
     return {
-      'metadataType': metadataType,
+      'metadataType': metadataType.value,
     };
   }
+
+  factory CastMediaMetadata.fromMap(Map<String, dynamic> map) {
+    return CastMediaMetadata(
+      metadataType: MediaMetadataType.fromMap(map['metadataType']),
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory CastMediaMetadata.fromJson(String source) =>
+      CastMediaMetadata.fromMap(json.decode(source));
 }
 
 enum MediaMetadataType {
@@ -21,7 +34,7 @@ enum MediaMetadataType {
   final int value;
   const MediaMetadataType(this.value);
 
-  factory MediaMetadataType.fromInt(int value) {
+  factory MediaMetadataType.fromMap(int value) {
     return values.firstWhere(
       (element) => element.value == value,
       orElse: () => genericMediaMetadata,

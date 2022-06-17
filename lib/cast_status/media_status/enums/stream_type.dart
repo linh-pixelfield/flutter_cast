@@ -5,7 +5,7 @@ enum CastMediaStreamType {
 
   final String value;
   const CastMediaStreamType(this.value);
-  factory CastMediaStreamType.fromString(String value) =>
+  factory CastMediaStreamType.fromMap(String value) =>
       CastMediaStreamType.values.firstWhere(
         (element) => element.value == value,
         orElse: () => CastMediaStreamType.NONE,

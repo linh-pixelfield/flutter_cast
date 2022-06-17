@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:cast/cast.dart';
 import 'package:cast/commands/media_commands/enum/command_type.dart';
 
-class CastQueueInsertCommand extends CastMediaCommand {
-  CastQueueInsertCommand({
+class CastQueueInsertItemsCommand extends CastMediaCommand {
+  CastQueueInsertItemsCommand({
     required this.items,
     required this.mediaSessionId,
     this.customData,
@@ -27,8 +27,8 @@ class CastQueueInsertCommand extends CastMediaCommand {
     };
   }
 
-  factory CastQueueInsertCommand.fromMap(Map<String, dynamic> map) {
-    return CastQueueInsertCommand(
+  factory CastQueueInsertItemsCommand.fromMap(Map<String, dynamic> map) {
+    return CastQueueInsertItemsCommand(
       mediaSessionId: map['mediaSessionId']?.toInt() ?? 1,
       items: List<CastQueueItem>.from(
           map['items']?.map((x) => CastQueueItem.fromMap(x))),
@@ -39,6 +39,6 @@ class CastQueueInsertCommand extends CastMediaCommand {
 
   String toJson() => json.encode(toMap());
 
-  factory CastQueueInsertCommand.fromJson(String source) =>
-      CastQueueInsertCommand.fromMap(json.decode(source));
+  factory CastQueueInsertItemsCommand.fromJson(String source) =>
+      CastQueueInsertItemsCommand.fromMap(json.decode(source));
 }

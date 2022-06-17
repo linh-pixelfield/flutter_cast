@@ -125,3 +125,16 @@ Some informations about the protocol used https://docs.rs/crate/gcast/0.1.5/sour
 ## Author
 
 - [Jonathan VUKOVICH-TRIBOUHARET](https://github.com/jonathantribouharet) 
+## To do
+### Commands
+- [x] QueueRemoveItems
+- [] QueueReorderItems
+- [x] QueueUpdateItems
+- [x] Stop
+- [x] GetStatus
+- [x] Load
+- [x] Pause
+- [x] Play
+- [x] QueueInsert
+- [x] Seek
+

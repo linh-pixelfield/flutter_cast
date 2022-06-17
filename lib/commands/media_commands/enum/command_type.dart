@@ -7,4 +7,7 @@ enum MediaCommandType {
   GET_STATUS,
   SEEK,
   QUEUE_INSERT,
+  QUEUE_UPDATE,
+  QUEUE_REMOVE,
+  QUEUE_REORDER,
 }

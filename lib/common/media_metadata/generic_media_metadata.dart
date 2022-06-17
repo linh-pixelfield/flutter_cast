@@ -50,7 +50,7 @@ class CastGenericMediaMetadata extends CastMediaMetadata {
 
   factory CastGenericMediaMetadata.fromMap(Map<String, dynamic> map) {
     return CastGenericMediaMetadata(
-      metadataType: MediaMetadataType.fromInt(map['metadataType']),
+      metadataType: MediaMetadataType.fromMap(map['metadataType']),
       title: map['title'],
       subtitle: map['subtitle'],
       images: map['images'] != null

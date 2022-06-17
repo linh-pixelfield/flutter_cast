@@ -87,7 +87,7 @@ class CastMusicMediaMetadata extends CastMediaMetadata {
 
   factory CastMusicMediaMetadata.fromMap(Map<String, dynamic> map) {
     return CastMusicMediaMetadata(
-      metadataType: MediaMetadataType.fromInt(map['metadataType']),
+      metadataType: MediaMetadataType.fromMap(map['metadataType']),
       albumName: map['albumName'],
       title: map['title'],
       albumArtist: map['albumArtist'],
