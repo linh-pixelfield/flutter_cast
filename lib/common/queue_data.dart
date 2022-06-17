@@ -10,6 +10,12 @@ class CastQueueData {
   final String? name;
   final String? description;
   final QueueRepeatMode? repeatMode;
+
+  /// if you will run LOAD command, you will
+  ///  prefer put only one item
+  /// in queue with id equals 0 and
+  /// then you can use QUEUE_INSERT
+  ///  command to add items to queue
   final List<CastQueueItem>? items;
   final int? startIndex;
   final Duration? startTime;

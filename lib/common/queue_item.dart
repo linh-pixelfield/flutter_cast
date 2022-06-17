@@ -17,7 +17,7 @@ class CastQueueItem {
   final int? itemId;
 
   /// Media description.
-  final CastMediaInformation media;
+  final CastMediaInformation? media;
 
   /// Playback duration of the item in seconds. If it is larger than the actual duration - startTime it will be limited to the actual duration - startTime. It can be negative, in such case the duration will be the actual item duration minus the duration provided. A duration of value zero effectively means that the item will not be played.
   final Duration? playbackDuration;
@@ -45,11 +45,11 @@ class CastQueueItem {
       'autoplay': autoplay,
       'customData': customData,
       'itemId': itemId,
-      'media': media.toMap(),
+      'media': media?.toMap(),
       'playbackDuration': playbackDuration?.inSeconds,
       'preloadTime': preloadTime?.inSeconds,
       'startTime': startTime?.inSeconds,
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
   factory CastQueueItem.fromMap(Map<String, dynamic> map) {
@@ -62,7 +62,9 @@ class CastQueueItem {
           ? Map<String, dynamic>.from(map['customData'])
           : null,
       itemId: map['itemId']?.toInt(),
-      media: CastMediaInformation.fromMap(map['media']),
+      media: map['media'] != null
+          ? CastMediaInformation.fromMap(map['media'])
+          : null,
       playbackDuration: map['playbackDuration'] != null
           ? Duration(seconds: (map['playbackDuration'])?.toInt() ?? 0)
           : null,
@@ -79,4 +81,26 @@ class CastQueueItem {
 
   factory CastQueueItem.fromJson(String source) =>
       CastQueueItem.fromMap(json.decode(source));
+
+  CastQueueItem copyWith({
+    List<int>? activeTrackIds,
+    bool? autoplay,
+    Map<String, dynamic>? customData,
+    int? itemId,
+    CastMediaInformation? media,
+    Duration? playbackDuration,
+    Duration? preloadTime,
+    Duration? startTime,
+  }) {
+    return CastQueueItem(
+      activeTrackIds: activeTrackIds ?? this.activeTrackIds,
+      autoplay: autoplay ?? this.autoplay,
+      customData: customData ?? this.customData,
+      itemId: itemId ?? this.itemId,
+      media: media ?? this.media,
+      playbackDuration: playbackDuration ?? this.playbackDuration,
+      preloadTime: preloadTime ?? this.preloadTime,
+      startTime: startTime ?? this.startTime,
+    );
+  }
 }

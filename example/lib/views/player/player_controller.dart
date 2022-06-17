@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:cast/cast.dart';
+import 'package:cast/commands/media_commands/enum/command_type.dart';
+import 'package:cast/commands/media_commands/queue_reorder_items.dart';
 import 'package:example/models/video_model.dart';
 import 'package:example/views/devices_bottom_sheet/devices_bottom_sheet_view.dart';
 import 'package:example/views/gallery/gallery_view.dart';
@@ -22,7 +24,8 @@ class PlayerController extends GetxController {
   CastMediaStatus? currentMediaStatus;
   bool _isVolumeChanging = false;
   double _volumeLevel = 0;
-  bool get existentMediaSession => currentMediaStatus != null;
+  bool _isReordering = false;
+
   double get volumeLevel => _volumeLevel;
   double get videoProgress => _progress;
 
@@ -47,7 +50,8 @@ class PlayerController extends GetxController {
     // _videoTickerTimer = Timer.periodic(
     //   const Duration(seconds: 1),
     //   (timer) {
-    //     _currentSession?.sendMediaCommand(CastGetStatusCommand());
+    //     _currentSession?.sendMediaCommand(CastGetStatusCommand(
+    //         mediaSessionId: currentMediaStatus?.mediaSessionId));
     //   },
     // );
     update();
@@ -59,37 +63,40 @@ class PlayerController extends GetxController {
     update();
   }
 
-  void openGallery() async {
-    final videos = await Get.to<List<VideoModel>?>(() => const GalleryView());
-    if (videos == null || videos.isEmpty) return;
-    final queueItems = videos
-        .map(
-          (e) => CastQueueItem(
-            media: CastMediaInformation(
-                contentId: e.videoUrl,
-                streamType: CastMediaStreamType.BUFFERED,
-                contentType: lookupMimeType(e.videoUrl) ?? ''),
-            preloadTime: const Duration(seconds: 15),
-          ),
-        )
-        .toList();
-    if (!existentMediaSession) {
-      _currentSession?.sendMediaCommand(
-        CastLoadCommand(
-          autoplay: true,
-          queueData: CastQueueData(
-            items: queueItems,
-          ),
+  void getStartMedias() async {
+    final video = await Get.to<VideoModel?>(
+        () => const GalleryView(pickerType: GalleryPickerType.single));
+    if (video == null) return;
+
+    _currentSession?.sendMediaCommand(
+      CastLoadCommand(
+        autoplay: true,
+        queueData: CastQueueData(
+          items: [
+            CastQueueItem(
+              itemId: 0,
+              media: CastMediaInformation(
+                  contentId: video.id,
+                  contentUrl: video.videoUrl,
+                  streamType: CastMediaStreamType.BUFFERED,
+                  contentType: lookupMimeType(video.videoUrl) ?? '',
+                  metadata: CastMovieMediaMetadata(
+                    images: [
+                      CastImage(
+                        url: Uri.parse(video.thumbnailUrl),
+                      ),
+                    ],
+                    title: video.title,
+                    subtitle: video.description,
+                    releaseDate: DateTime(2001, 10, 11),
+                    studio: 'Toei Animation',
+                  )),
+              preloadTime: const Duration(seconds: 15),
+            )
+          ],
         ),
-      );
-    } else {
-      _currentSession?.sendMediaCommand(
-        CastQueueInsertItemsCommand(
-          items: queueItems,
-          mediaSessionId: currentMediaStatus?.mediaSessionId ?? 1,
-        ),
-      );
-    }
+      ),
+    );
   }
 
   void _listenEvents(List<CastMediaStatus> events) {
@@ -102,8 +109,9 @@ class PlayerController extends GetxController {
   }
 
   _onChangeProgress(List<CastMediaStatus> events) {
+    if (events.first.media == null) return;
     currentMediaStatus = events.first;
-    print('currentMediaStatus: ${currentMediaStatus?.toJson()}');
+
     if (!isChangeProgress) {
       int mediaDuration = (events.first.media?.duration?.inMilliseconds ?? 0);
       if (mediaDuration == 0) return;
@@ -120,6 +128,7 @@ class PlayerController extends GetxController {
         _sessionStateSubscription?.cancel();
         _receiverStatusSubscription?.cancel();
         _currentSession = null;
+        currentMediaStatus = null;
 
         _progress = 0;
 
@@ -206,5 +215,76 @@ class PlayerController extends GetxController {
 
   void _printRawMessages(Map<String, dynamic> event) {
     print(event);
+  }
+
+  void next() {
+    _currentSession?.sendMediaCommand(CastMediaCommand(
+        type: MediaCommandType.QUEUE_NEXT,
+        mediaSessionId: currentMediaStatus?.mediaSessionId));
+  }
+
+  void previous() async {
+    final result = await _currentSession?.sendMediaCommand(
+      CastQueuePreviousCommand(
+        mediaSessionId: currentMediaStatus?.mediaSessionId,
+      ),
+    );
+    print(result);
+  }
+
+  void addToPlayList() async {
+    final videos = await Get.to<List<VideoModel>?>(
+        () => const GalleryView(pickerType: GalleryPickerType.multiple));
+    if (videos == null) return;
+    final queueItems = videos.map((video) {
+      return CastQueueItem(
+        media: CastMediaInformation(
+            contentId: video.id,
+            contentUrl: video.videoUrl,
+            streamType: CastMediaStreamType.BUFFERED,
+            contentType: lookupMimeType(video.videoUrl) ?? '',
+            metadata: CastMovieMediaMetadata(
+              images: [
+                CastImage(
+                  url: Uri.parse(video.thumbnailUrl),
+                ),
+              ],
+              title: video.title,
+              subtitle: video.description,
+              releaseDate: DateTime(2001, 10, 11),
+              studio: 'Toei Animation',
+            )),
+        preloadTime: const Duration(seconds: 15),
+      );
+    }).toList();
+
+    final result = await _currentSession?.sendMediaCommand(
+      CastQueueInsertItemsCommand(
+        items: queueItems,
+        mediaSessionId: currentMediaStatus?.mediaSessionId,
+      ),
+    );
+    print(result);
+  }
+
+  void onReorderStart(int index) {
+    _isReordering = true;
+  }
+
+  void onReorderEnd(int index) {
+    _isReordering = false;
+  }
+
+  void onReorder(int oldIndex, int newIndex) {
+    final queueItems = currentMediaStatus?.items ?? [];
+    final index = newIndex < oldIndex ? newIndex : newIndex - 1;
+    final itemId = queueItems[oldIndex].itemId!;
+    int? replaceItemId = queueItems[newIndex].itemId;
+    if (replaceItemId! <= 0) replaceItemId = null;
+    _currentSession?.sendMediaCommand(CastQueueReorderItems(
+      itemIds: [itemId],
+      insertBefore: replaceItemId,
+      mediaSessionId: currentMediaStatus?.mediaSessionId,
+    ));
   }
 }

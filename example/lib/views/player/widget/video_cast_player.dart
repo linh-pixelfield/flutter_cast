@@ -33,18 +33,20 @@ class VideoCastPlayer extends StatelessWidget {
             return const SizedBox.shrink();
           })),
           Positioned.fill(
-              child: IconButton(
-            onPressed: controller.togglePlayPause,
-            icon: CircleAvatar(
-              backgroundColor: Colors.white.withOpacity(0.4),
-              radius: 32,
-              child: Icon(
-                controller.currentMediaStatus?.playerState ==
-                        CastMediaPlayerState.playing
-                    ? Icons.pause
-                    : Icons.play_arrow,
-                size: 52,
-                color: Colors.black,
+              child: Center(
+            child: IconButton(
+              onPressed: controller.togglePlayPause,
+              icon: CircleAvatar(
+                backgroundColor: Colors.white.withOpacity(0.4),
+                radius: 32,
+                child: Icon(
+                  controller.currentMediaStatus?.playerState ==
+                          CastMediaPlayerState.playing
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  size: 30,
+                  color: Colors.black,
+                ),
               ),
             ),
           )),
@@ -54,6 +56,18 @@ class VideoCastPlayer extends StatelessWidget {
             right: 0,
             child: Row(
               children: [
+                IconButton(
+                    onPressed: controller.previous,
+                    icon: const Icon(
+                      Icons.skip_previous,
+                      color: Colors.white,
+                    )),
+                IconButton(
+                    onPressed: controller.next,
+                    icon: const Icon(
+                      Icons.skip_next,
+                      color: Colors.white,
+                    )),
                 Expanded(
                   child: Slider(
                     value: controller.videoProgress,

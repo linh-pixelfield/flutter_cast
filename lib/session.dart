@@ -148,11 +148,29 @@ class CastSession {
     );
   }
 
-  void sendMediaCommand(CastMediaCommand command) {
+  Future<T> sendMediaCommand<T>(CastMediaCommand<T> command) async {
+    StreamSubscription? subscription;
+    final completer = Completer();
+    final timer = Timer.periodic(Duration(seconds: 15), (timer) {
+      timer.cancel();
+      completer.completeError('timeout :15 seconds');
+      subscription?.cancel();
+    });
+    subscription = _socket.stream.listen(
+      (event) => completer.complete(
+        command.decodeResponse(event.payload),
+      ),
+    );
     sendMessage(
       kNamespaceMedia,
       command.toMap(),
     );
+
+    final result = await completer.future;
+    timer.cancel();
+    await subscription.cancel();
+
+    return result;
   }
 
   void sendReceiverCommand(CastReceiverCommand command) {

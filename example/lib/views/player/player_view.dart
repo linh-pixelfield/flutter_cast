@@ -21,7 +21,7 @@ class PlayerView extends StatelessWidget {
             actions: [
               if (controller.activeSession)
                 IconButton(
-                    onPressed: controller.openGallery,
+                    onPressed: controller.getStartMedias,
                     icon: const Icon(Icons.play_circle)),
               IconButton(
                 icon: controller.activeSession
@@ -36,10 +36,21 @@ class PlayerView extends StatelessWidget {
           body: Column(
             children: [
               VideoCastPlayer(controller: controller),
+              if (controller.currentMediaStatus != null)
+                ListTile(
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.add),
+                  ),
+                  title: const Text('Add Media'),
+                  onTap: controller.addToPlayList,
+                ),
               Expanded(
-                  child: ListView.builder(
+                  child: ReorderableListView.builder(
                 itemBuilder: _buildListTile,
                 itemCount: controller.currentMediaStatus?.items?.length ?? 0,
+                onReorderStart: controller.onReorderStart,
+                onReorder: controller.onReorder,
+                onReorderEnd: controller.onReorderEnd,
               )),
             ],
           ),
@@ -51,10 +62,27 @@ class PlayerView extends StatelessWidget {
   Widget _buildListTile(BuildContext context, int index) {
     final controller = Get.find<PlayerController>();
     final item = controller.currentMediaStatus!.items![index];
-    final metadata = item.media.metadata as CastMovieMediaMetadata;
+    final metadata = item.media?.metadata as CastMovieMediaMetadata;
     final image = (metadata.images ?? []).isEmpty ? null : metadata.images![0];
-    return ListTile(
-      leading: image != null ? Image.network(image.url.toString()) : null,
+    return Container(
+      key: ValueKey(index),
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: ListTile(
+        leading: image != null
+            ? Image.network(
+                image.url.toString(),
+              )
+            : null,
+        title: Text(metadata.title ?? 'No title'),
+        subtitle: Text(
+          metadata.subtitle ?? 'No subtitle',
+          maxLines: 2,
+        ),
+        trailing: Text(
+          '${(index + 1)}',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 }

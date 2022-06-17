@@ -5,6 +5,7 @@ import 'package:cast/commands/media_commands/enum/command_type.dart';
 class CastQueueReorderItems extends CastMediaCommand {
   CastQueueReorderItems({
     required this.itemIds,
+    required super.mediaSessionId,
     this.insertBefore,
     this.customData,
   })  : assert(itemIds.isNotEmpty, 'Must not be null or empty.'),
@@ -33,4 +34,14 @@ class CastQueueReorderItems extends CastMediaCommand {
   ///
   /// If any of the items does not exist it will be ignored. Must not be null or empty.
   final List<int> itemIds;
+
+  @override
+  Map<String, dynamic> toMap() {
+    return {
+      'type': type.toString(),
+      'itemIds': itemIds,
+      'insertBefore': insertBefore,
+      'mediaSessionId': mediaSessionId,
+    };
+  }
 }

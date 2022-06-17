@@ -18,6 +18,7 @@ class CastSocket {
 
   final SecureSocket _socket;
   int _requestId = 0;
+  int get requestId => _requestId;
   final _controller = StreamController<CastSocketMessage>.broadcast();
 
   CastSocket._(this._socket);

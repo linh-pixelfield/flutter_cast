@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cast/cast_status/utils/utils.dart';
 import 'package:cast/common/break.dart';
 import 'package:cast/common/break_clips.dart';
 import 'package:cast/common/hls_segment_format.dart';
@@ -141,7 +142,7 @@ class CastMediaInformation {
       'tracks': tracks?.map((x) => x.toMap()).toList(),
       'userActionStates': userActionStates?.map((x) => x.toMap()).toList(),
       'vmapAdsRequest': vmapAdsRequest?.toMap(),
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
   factory CastMediaInformation.fromMap(Map<String, dynamic> map) {
@@ -155,12 +156,12 @@ class CastMediaInformation {
       streamType: CastMediaStreamType.fromMap(map['streamType']),
       contentType: map['contentType'] ?? '',
       metadata: map['metadata'] != null
-          ? CastMediaMetadata.fromMap(map['metadata'])
+          ? getCastMediaMetadata(map['metadata'])
           : null,
       duration: map['duration'] != null
           ? Duration(seconds: map['duration'].round())
           : null,
-      customData: Map<String, dynamic>.from(map['customData']),
+      customData: Map<String, dynamic>.from(map['customData'] ?? {}),
       breaks: map['breaks'] != null
           ? List<CastBreak>.from(
               map['breaks']?.map((x) => CastBreak.fromMap(x)))

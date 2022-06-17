@@ -3,13 +3,22 @@ import 'package:example/views/gallery/gallery_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 
+enum GalleryPickerType {
+  single,
+  multiple,
+}
+
 class GalleryView extends StatelessWidget {
-  const GalleryView({Key? key}) : super(key: key);
+  const GalleryView({
+    Key? key,
+    required this.pickerType,
+  }) : super(key: key);
+  final GalleryPickerType pickerType;
 
   @override
   Widget build(BuildContext context) {
     return GetBuilder<GalleryController>(
-        init: GalleryController(),
+        init: GalleryController(pickerType: pickerType),
         builder: (controller) {
           return Scaffold(
             appBar: AppBar(

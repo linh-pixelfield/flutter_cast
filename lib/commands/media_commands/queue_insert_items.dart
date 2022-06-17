@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:cast/cast.dart';
 import 'package:cast/commands/media_commands/enum/command_type.dart';
 
-class CastQueueInsertItemsCommand extends CastMediaCommand {
+class CastQueueInsertItemsCommand extends CastMediaCommand<List<int>> {
   CastQueueInsertItemsCommand({
     required this.items,
-    required this.mediaSessionId,
+    required super.mediaSessionId,
     this.customData,
     this.insertBefore,
   }) : super(type: MediaCommandType.QUEUE_INSERT);
 
   final List<CastQueueItem> items;
-  final int mediaSessionId;
+
   final Map<String, dynamic>? customData;
   final int? insertBefore;
 
@@ -41,4 +41,9 @@ class CastQueueInsertItemsCommand extends CastMediaCommand {
 
   factory CastQueueInsertItemsCommand.fromJson(String source) =>
       CastQueueInsertItemsCommand.fromMap(json.decode(source));
+
+  @override
+  List<int> decodeResponse(Map<String, dynamic> map) {
+    return List<int>.from(map['itemIds']);
+  }
 }

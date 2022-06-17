@@ -21,7 +21,7 @@ enum QueueRepeatMode {
 
   ALL_AND_SHUFFLE;
 
-  static QueueRepeatMode fromMap(String map) {
+  static QueueRepeatMode fromMap(String? map) {
     switch (map) {
       case 'OFF':
         return QueueRepeatMode.OFF;

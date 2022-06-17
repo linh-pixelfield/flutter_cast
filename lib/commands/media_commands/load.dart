@@ -12,7 +12,7 @@ class CastLoadCommand extends CastMediaCommand {
     this.autoplay,
     this.currentTime,
     this.customData,
-    required this.queueData,
+    this.queueData,
   })  : assert((media == null) ^ (queueData == null),
             'You need specify a media or a queue data items'),
         super(type: MediaCommandType.LOAD);
@@ -73,7 +73,7 @@ class CastLoadCommand extends CastMediaCommand {
       'currentTime': currentTime?.inSeconds,
       'customData': customData,
       'queueData': queueData?.toMap(),
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
   String toJson() => json.encode(toMap());
