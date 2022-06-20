@@ -15,6 +15,7 @@ class VideoModel extends Equatable {
   final String videoUrl;
   final String description;
   final String subscriber;
+  final String? subtitle_uri;
   final bool isLive;
   VideoModel({
     required this.id,
@@ -28,6 +29,7 @@ class VideoModel extends Equatable {
     required this.description,
     required this.subscriber,
     required this.isLive,
+    this.subtitle_uri,
   });
 
   Map<String, dynamic> toMap() {
@@ -43,6 +45,7 @@ class VideoModel extends Equatable {
       'description': description,
       'subscriber': subscriber,
       'isLive': isLive,
+      'subtitle_uri': subtitle_uri,
     };
   }
 
@@ -59,6 +62,7 @@ class VideoModel extends Equatable {
       description: map['description'] ?? '',
       subscriber: map['subscriber'] ?? '',
       isLive: map['isLive'] ?? false,
+      subtitle_uri: map['subtitle_uri'],
     );
   }
 
@@ -68,6 +72,5 @@ class VideoModel extends Equatable {
       VideoModel.fromMap(json.decode(source));
 
   @override
-  // TODO: implement props
   List<Object?> get props => [id];
 }

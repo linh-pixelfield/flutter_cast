@@ -63,7 +63,7 @@ class Track {
   Map<String, dynamic> toMap() {
     return {
       'customData': customData,
-      'language': language?.name,
+      'language': language?.toString(),
       'name': name,
       'subtype': subtype?.name,
       'trackContentId': trackContentId,
@@ -75,7 +75,7 @@ class Track {
 
   factory Track.fromMap(Map<String, dynamic> map) {
     return Track(
-      customData: Map<String, dynamic>.from(map['customData']),
+      customData: Map<String, dynamic>.from(map['customData'] ?? {}),
       language: map['language'] != null
           ? RFC5646_LANGUAGE.fromMap(map['language'])
           : null,

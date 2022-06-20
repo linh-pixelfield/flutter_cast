@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:cast/cast.dart';
 import 'package:cast/commands/media_commands/enum/command_type.dart';
 
-class CastQueueInsertItemsCommand extends CastMediaCommand<List<int>> {
+class CastQueueInsertItemsCommand extends CastMediaCommand {
   CastQueueInsertItemsCommand({
     required this.items,
     required super.mediaSessionId,

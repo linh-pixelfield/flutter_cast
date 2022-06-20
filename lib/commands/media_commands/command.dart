@@ -13,7 +13,7 @@ class CastMediaCommand<T> {
     return {
       'type': type.toString(),
       'mediaSessionId': mediaSessionId,
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
   T decodeResponse(Map<String, dynamic> map) {

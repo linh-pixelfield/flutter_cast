@@ -112,7 +112,15 @@ class VideoCastPlayer extends StatelessWidget {
                         color: Colors.white,
                       ))
                 ],
-              ))
+              )),
+          Positioned(
+            child: IconButton(
+                onPressed: controller.toggleSubtitle,
+                icon: const Icon(
+                  Icons.closed_caption,
+                  color: Colors.white,
+                )),
+          ),
         ],
       ),
     );

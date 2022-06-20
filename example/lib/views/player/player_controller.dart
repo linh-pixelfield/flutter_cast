@@ -47,13 +47,14 @@ class PlayerController extends GetxController {
     _receiverStatusSubscription =
         _currentSession?.receiverStatusStream.listen(_listenReceiverStatus);
     _currentSession?.messageStream.listen(_printRawMessages);
-    // _videoTickerTimer = Timer.periodic(
-    //   const Duration(seconds: 1),
-    //   (timer) {
-    //     _currentSession?.sendMediaCommand(CastGetStatusCommand(
-    //         mediaSessionId: currentMediaStatus?.mediaSessionId));
-    //   },
-    // );
+
+    _videoTickerTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (timer) {
+        _currentSession?.sendMediaCommand(CastGetStatusCommand(
+            mediaSessionId: currentMediaStatus?.mediaSessionId));
+      },
+    );
     update();
   }
 
@@ -224,12 +225,11 @@ class PlayerController extends GetxController {
   }
 
   void previous() async {
-    final result = await _currentSession?.sendMediaCommand(
+    _currentSession?.sendMediaCommand(
       CastQueuePreviousCommand(
         mediaSessionId: currentMediaStatus?.mediaSessionId,
       ),
     );
-    print(result);
   }
 
   void addToPlayList() async {
@@ -238,11 +238,22 @@ class PlayerController extends GetxController {
     if (videos == null) return;
     final queueItems = videos.map((video) {
       return CastQueueItem(
+        activeTrackIds: [0],
         media: CastMediaInformation(
             contentId: video.id,
             contentUrl: video.videoUrl,
             streamType: CastMediaStreamType.BUFFERED,
             contentType: lookupMimeType(video.videoUrl) ?? '',
+            tracks: [
+              Track(
+                trackId: 0,
+                type: TrackType.TEXT,
+                subtype: TextTrackType.SUBTITLES,
+                language: RFC5646_LANGUAGE.PORTUGUESE_BRAZIL,
+                name: 'Português (Brasil)',
+                trackContentId: video.subtitle_uri,
+              )
+            ],
             metadata: CastMovieMediaMetadata(
               images: [
                 CastImage(
@@ -258,13 +269,12 @@ class PlayerController extends GetxController {
       );
     }).toList();
 
-    final result = await _currentSession?.sendMediaCommand(
+    _currentSession?.sendMediaCommand(
       CastQueueInsertItemsCommand(
         items: queueItems,
         mediaSessionId: currentMediaStatus?.mediaSessionId,
       ),
     );
-    print(result);
   }
 
   void onReorderStart(int index) {
@@ -286,5 +296,14 @@ class PlayerController extends GetxController {
       insertBefore: replaceItemId,
       mediaSessionId: currentMediaStatus?.mediaSessionId,
     ));
+  }
+
+  void toggleSubtitle() {
+    _currentSession?.sendMediaCommand(
+      CastMediaCommand(
+        type: MediaCommandType.CAPTIONS,
+        mediaSessionId: currentMediaStatus?.mediaSessionId,
+      ),
+    );
   }
 }

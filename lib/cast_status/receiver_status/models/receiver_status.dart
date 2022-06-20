@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:cast/common/volume.dart';
 import 'package:cast/cast_status/receiver_status/models/application.dart';
+import 'package:cast/common/volume.dart';
 
 class ReceiverStatus {
   final List<CastApplication> applications;
