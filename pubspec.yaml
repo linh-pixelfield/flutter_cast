@@ -7,7 +7,7 @@ environment:
   sdk: ">=2.17.0 <=3.5.2"
 
 dependencies:
-  bonsoir: 2.1.0
+  bonsoir: 5.1.11
   flutter:
     sdk: flutter
   protobuf: ^2.0.0
