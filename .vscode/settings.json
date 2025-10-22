@@ -1,7 +1,7 @@
 {
-    "cSpell.words": [
-        "Reorderable",
-        "Seekable"
-    ],
-    "dart.flutterSdkPath": "/Users/luizfelipealveslima/fvm/versions/stable"
+  "cSpell.words": [
+    "Reorderable",
+    "Seekable"
+  ],
+  "dart.flutterSdkPath": ".fvm/versions/3.24.2"
 }
